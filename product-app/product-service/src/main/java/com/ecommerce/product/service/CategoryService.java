@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.ecommerce.dto.category.CategoryDTO;
 import org.ecommerce.dto.category.CreateCategoryDTO;
+import org.ecommerce.exception.EntityNotFoundException;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
@@ -27,5 +28,20 @@ public class CategoryService
         log.info("Created category {}", category);
 
         return modelMapper.map(category, CategoryDTO.class);
+    }
+
+    public CategoryDTO findById(Long id)
+    {
+        log.debug("Finding category with id {}", id);
+
+        var category = categoryRepository.findById(id)
+                .orElseThrow(() -> {
+                    log.debug("Category with id {} not found", id);
+
+                    return new EntityNotFoundException("Category with id " + id + " not found");
+                });
+
+        return modelMapper.map(category, CategoryDTO.class);
+
     }
 }
