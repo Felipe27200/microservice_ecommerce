@@ -10,6 +10,8 @@ import org.ecommerce.exception.EntityNotFoundException;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 @Slf4j
 @RequiredArgsConstructor
@@ -42,6 +44,10 @@ public class CategoryService
                 });
 
         return modelMapper.map(category, CategoryDTO.class);
+    }
 
+    public List<Category> findAll()
+    {
+        return this.categoryRepository.findAll();
     }
 }
