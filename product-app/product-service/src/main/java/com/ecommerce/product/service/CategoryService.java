@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.ecommerce.dto.category.CategoryDTO;
 import org.ecommerce.dto.category.CreateCategoryDTO;
+import org.ecommerce.exception.EntityDuplicateException;
 import org.ecommerce.exception.EntityNotFoundException;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
@@ -27,21 +28,37 @@ public class CategoryService
         var category = modelMapper.map(categoryDTO, Category.class);
         category = categoryRepository.save(category);
 
-        log.info("Created category {}", category);
+        log.info("Category Created {}", category);
 
         return modelMapper.map(category, CategoryDTO.class);
+    }
+
+    public CategoryDTO updateCategory(CategoryDTO categoryDTO, Long id)
+    {
+        log.info("[updateCategory] Updating category {}", categoryDTO);
+
+        var oldCategory = this.findCategoryById(id);
+
+        var checkName = this.categoryRepository.findByName(categoryDTO.getName()).orElse(null);
+
+        if (checkName != null && !checkName.getId().equals(id))
+            throw new EntityDuplicateException("Category Name is already in use");
+
+        oldCategory.setName(categoryDTO.getName());
+        oldCategory.setDescription(categoryDTO.getDescription());
+
+        oldCategory = categoryRepository.save(oldCategory);
+
+        log.info("[updateCategory] Category Updated {}", oldCategory);
+
+        return modelMapper.map(oldCategory, CategoryDTO.class);
     }
 
     public CategoryDTO findById(Long id)
     {
         log.debug("Finding category with id {}", id);
 
-        var category = categoryRepository.findById(id)
-                .orElseThrow(() -> {
-                    log.debug("Category with id {} not found", id);
-
-                    return new EntityNotFoundException("Category with id " + id + " not found");
-                });
+        var category = this.findCategoryById(id);
 
         return modelMapper.map(category, CategoryDTO.class);
     }
@@ -50,4 +67,26 @@ public class CategoryService
     {
         return this.categoryRepository.findAll();
     }
+
+    public Category findCategoryById(Long id)
+    {
+        return categoryRepository.findById(id)
+            .orElseThrow(() -> {
+                log.debug("Category with id {} not found", id);
+
+                return new EntityNotFoundException("Category with id " + id + " not found");
+            });
+    }
+
+    public Category findCategoryByName(String name)
+    {
+        return categoryRepository.findByName(name)
+            .orElseThrow(() -> {
+                log.debug("Category with name {} not found", name);
+
+                return new EntityNotFoundException("Category with name " + name + " not found");
+            });
+    }
+
+
 }

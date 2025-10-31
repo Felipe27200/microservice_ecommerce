@@ -1,6 +1,7 @@
 package com.ecommerce.product.handler;
 
 import lombok.extern.slf4j.Slf4j;
+import org.ecommerce.exception.EntityDuplicateException;
 import org.ecommerce.exception.EntityNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -28,6 +29,22 @@ public class GlobalExceptionHandler
         log.error("[EntityNotFoundException] exception: {}", ex.getMessage(), ex);
 
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
+    }
+
+    @ExceptionHandler(EntityDuplicateException.class)
+    public ResponseEntity<Map<String, Object>> handleEntityDuplicateException(final EntityDuplicateException ex)
+    {
+        final Map<String, Object> error = Map
+                .of("errors",
+                        List.of(Map.of(
+                                "status", "404",
+                                "title", "Not Found",
+                                "detail", ex.getMessage() != null ? ex.getMessage() : "The entity was already created"
+                        )));
+
+        log.error("[EntityNotFoundException] exception: {}", ex.getMessage(), ex);
+
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(error);
     }
 
     /**
