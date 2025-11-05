@@ -13,6 +13,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -24,10 +26,16 @@ public class Product
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(length = 100)
     private String name;
+    @Column
     private String description;
     @Column
     private Boolean active = true;
+    @Column
+    private BigDecimal price;
+    @Column
+    private Long stockQuantity;
 
     @ManyToOne
     @JoinColumn(
