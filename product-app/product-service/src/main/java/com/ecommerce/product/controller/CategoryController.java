@@ -1,6 +1,5 @@
 package com.ecommerce.product.controller;
 
-import com.ecommerce.product.entity.Category;
 import com.ecommerce.product.service.CategoryService;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
@@ -40,7 +39,7 @@ public class CategoryController
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<CategoryDTO> updateCategory(@PathVariable Long id, @Valid @RequestBody CategoryDTO categoryDTO)
+    public ResponseEntity<CategoryDTO> updateCategory(@PathVariable Long id, @Valid @RequestBody CreateCategoryDTO categoryDTO)
     {
         log.debug("[updateCategory] {}", categoryDTO);
 
@@ -52,7 +51,7 @@ public class CategoryController
     }
 
     @GetMapping("/")
-    public ResponseEntity<List<Category>> getAllCategories()
+    public ResponseEntity<List<CategoryDTO>> getAllCategories()
     {
         return new ResponseEntity<>(this.categoryService.findAll(), HttpStatus.OK);
     }

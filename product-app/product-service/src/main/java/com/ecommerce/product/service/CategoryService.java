@@ -33,7 +33,7 @@ public class CategoryService
         return modelMapper.map(category, CategoryDTO.class);
     }
 
-    public CategoryDTO updateCategory(CategoryDTO categoryDTO, Long id)
+    public CategoryDTO updateCategory(CreateCategoryDTO categoryDTO, Long id)
     {
         log.info("[updateCategory] Updating category {}", categoryDTO);
 
@@ -63,9 +63,14 @@ public class CategoryService
         return modelMapper.map(category, CategoryDTO.class);
     }
 
-    public List<Category> findAll()
+    public List<CategoryDTO> findAll()
     {
-        return this.categoryRepository.findAll();
+        var categories = this.categoryRepository.findAll();
+
+        return categories
+            .stream()
+            .map(category -> modelMapper.map(category, CategoryDTO.class))
+            .toList();
     }
 
     public Category findCategoryById(Long id)
