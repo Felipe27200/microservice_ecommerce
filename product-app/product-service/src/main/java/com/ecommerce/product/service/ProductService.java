@@ -7,8 +7,11 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.ecommerce.dto.category.product.CreateProductDTO;
 import org.ecommerce.dto.category.product.ProductDTO;
+import org.ecommerce.exception.EntityNotFoundException;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 @Service
 @AllArgsConstructor
@@ -33,5 +36,57 @@ public class ProductService
         log.debug("[createProduct] Saved product {}", product);
 
         return modelMapper.map(product, ProductDTO.class);
+    }
+
+    public List<ProductDTO> findAllProducts()
+    {
+        log.debug("[findAllProducts] Finding all products");
+
+        var products = this.productRepository.findAll();
+
+        return products
+                .stream()
+                .map(product -> this.modelMapper.map(product, ProductDTO.class))
+                .toList();
+    }
+
+    public ProductDTO findById(Long id)
+    {
+        log.debug("[findById] Finding product {}", id);
+
+        var product = this.productRepository.findById(id)
+                .orElseThrow(() -> {
+                    log.debug("[findById] Product not found with id {}", id);
+
+                    return new EntityNotFoundException("Product not found with id " + id);
+                });
+
+        return modelMapper.map(product, ProductDTO.class);
+    }
+
+    public ProductDTO updateProduct(Long id, CreateProductDTO productDTO)
+    {
+        log.debug("[updateProduct] Updating product {}", id);
+
+         var oldProduct = this.productRepository.findById(id)
+                 .orElseThrow(() -> {
+                     log.debug("[updateProduct] Product not found with id {}", id);
+
+                     return new EntityNotFoundException("Product not found with id " + id);
+                 });
+
+         var category = this.categoryService.findById(productDTO.getCategoryFk());
+         var product = this.modelMapper.map(productDTO, Product.class);
+
+         oldProduct.setCategory(this.modelMapper.map(category, Category.class));
+         oldProduct.setName(product.getName());
+         oldProduct.setPrice(product.getPrice());
+         oldProduct.setDescription(product.getDescription());
+
+         product = productRepository.save(oldProduct);
+
+         log.debug("[updateProduct] Updated product {}", product);
+
+         return this.modelMapper.map(product, ProductDTO.class);
     }
 }
