@@ -1,6 +1,7 @@
 package com.ecommerce.product.controller;
 
 import com.ecommerce.product.service.ProductService;
+import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.ecommerce.dto.category.product.CreateProductDTO;
@@ -25,7 +26,7 @@ public class ProductController
     private final ProductService productService;
 
     @PostMapping
-    public ResponseEntity<ProductDTO> createProduct(@RequestBody CreateProductDTO productDTO)
+    public ResponseEntity<ProductDTO> createProduct(@Valid @RequestBody CreateProductDTO productDTO)
     {
         var newProduct = this.productService.createProduct(productDTO);
 
@@ -33,7 +34,7 @@ public class ProductController
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ProductDTO> updateProduct(@PathVariable Long id, @RequestBody CreateProductDTO productDTO)
+    public ResponseEntity<ProductDTO> updateProduct(@PathVariable Long id, @RequestBody @Valid CreateProductDTO productDTO)
     {
         var updatedProduct = this.productService.updateProduct(id, productDTO);
 

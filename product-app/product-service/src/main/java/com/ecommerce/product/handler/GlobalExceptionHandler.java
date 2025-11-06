@@ -3,8 +3,12 @@ package com.ecommerce.product.handler;
 import lombok.extern.slf4j.Slf4j;
 import org.ecommerce.exception.EntityDuplicateException;
 import org.ecommerce.exception.EntityNotFoundException;
+import org.springframework.beans.TypeMismatchException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.validation.FieldError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
@@ -42,9 +46,53 @@ public class GlobalExceptionHandler
                                 "detail", ex.getMessage() != null ? ex.getMessage() : "The entity was already created"
                         )));
 
-        log.error("[EntityNotFoundException] exception: {}", ex.getMessage(), ex);
+        log.error("[EntityDuplicateException] exception: {}", ex.getMessage(), ex);
 
         return ResponseEntity.status(HttpStatus.CONFLICT).body(error);
+    }
+
+    @ExceptionHandler(TypeMismatchException.class)
+    public ResponseEntity<Map<String, Object>> handleTypeMismatchException(TypeMismatchException ex)
+    {
+        final Map<String, Object> error = Map.of(
+                "error", ex.getRequiredType() == null
+                        ? String.format("The value '$%s' is not a correct type", ex.getRequiredType())
+                        : String.format("The value '%s' is not of type '%s'.", ex.getValue(), ex.getRequiredType())
+        );
+
+        log.error("[TypeMismatchException] exception: {}", ex.getMessage(), ex);
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<Map<String, Object>> handleMethodArgumentNotValidException(MethodArgumentNotValidException ex)
+    {
+        Map<String, Object> error = Map.of(
+                "status", 400,
+                "errors",
+                ex.getBindingResult().getFieldErrors().stream()
+                        .map(FieldError::getDefaultMessage)
+                        .toList()
+
+        );
+
+        log.error("[MethodArgumentNotValidException] exception: {}", ex.getMessage(), ex);
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
+    }
+
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<Map<String, Object>> handleHttpMessageNotReadableException(HttpMessageNotReadableException ex)
+    {
+        Map<String, Object> error = Map.of(
+                "status", 400,
+                "error", ex.getMessage()
+        );
+
+        log.error("[HttpMessageNotReadableException] exception: {}", ex.getMessage(), ex);
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
     }
 
     /**
@@ -60,6 +108,7 @@ public class GlobalExceptionHandler
         );
 
         log.error("[IllegalArgumentException] exception: {}", ex.getMessage(), ex);
+
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
     }
 
